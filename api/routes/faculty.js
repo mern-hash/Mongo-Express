@@ -9,9 +9,7 @@ router.get('/',(req,res,next)=>{
 })
 
 router.post('/',(req,res,next)=>{
-    res.status(200).json({
-        message:'app faculty is post running'
-    })
+    console.log(req.body);
 })
 
 module.exports= router;

@@ -1,9 +1,10 @@
-const express = require('express')
+const express = require('express');
 const app = express();
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 
-const studentRoute = require('./api/routes/student')
-const facultyRoute = require('./api/routes/faculty')
+const studentRoute = require('./api/routes/student');
+const facultyRoute = require('./api/routes/faculty');
 
 mongoose.connect('mongodb+srv://auser:auser12345@sbs.5ww4u.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
 mongoose.connection.on('error',err=>{
@@ -14,6 +15,8 @@ mongoose.connection.on('connected',connected=>{
     console.log('connected with database');
 });
 
+app.use(bodyParser.urlencoded({extended:false}));
+app.use(bodyParser.json());
 app.use('/student',studentRoute)
 app.use('/faculty',facultyRoute)
 
