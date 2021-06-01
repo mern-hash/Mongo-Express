@@ -8,7 +8,17 @@ const mongoose = require('mongoose');
 
 const student = require('../model/student');
 
-router.get('/',(req,res,next)=>{
+const checkAuth = require('../middleware/check-auth');
+
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+cloud_name:'dnqgs8dbq',
+api_key:917776448671352,
+api_secret:'kLoh0pBH7IJDhS82Y3Oc5t95fJ0'
+})
+
+router.get('/',checkAuth,(req,res,next)=>{
    
     Student.find()
     .then(result=>{
@@ -55,6 +65,19 @@ router.get('/:id',(req,res,next)=>{
 });
 
 
+// router.post('/',(req,res,next)=>{
+//     console.log(req.body);
+//     const file = req.files.photo;
+//     cloudinary.uploader.upload(file.tempFilePath,(err,result)=>{
+
+// console.log(result);
+
+//     });
+    
+// });
+
+
+
 router.post('/',(req,res,next)=>{
    const student = new Student({
 
@@ -86,6 +109,10 @@ gender:req.body.gender
 })
 
 })
+
+
+
+
 
 router.delete('/:id',(req,res,next)=>{
 

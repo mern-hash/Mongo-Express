@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 
 const studentRoute = require('./api/routes/student');
 const facultyRoute = require('./api/routes/faculty');
+const userRoute = require('./api/routes/user');
+const fileUpload = require('express-fileupload');
 
 mongoose.connect('mongodb+srv://auser:auser12345@sbs.5ww4u.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
 mongoose.connection.on('error',err=>{
@@ -19,6 +21,12 @@ app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
 app.use('/student',studentRoute)
 app.use('/faculty',facultyRoute)
+app.use('/user',userRoute)
+app.use(fileUpload({
+    useTempFiles:true
+
+}))
+
 
 app.use((req,res,next)=>{
     res.status(200).json({
