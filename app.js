@@ -1,223 +1,66 @@
 const express = require('express');
-const app = express();
-const session = require('express-session');
-//const MongoDBSession = require('connect-mongodb-session')(session);
-//const mongoURI = "mongodb://localhost:27017/sessions";
+const expressLayouts = require('express-ejs-layouts');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const productRoutes = require("./api/routes/products");
-const orderRoutes = require("./api/routes/orders");
-const studentRoute = require('./api/routes/student');
-const facultyRoute = require('./api/routes/faculty');
-const userRoute = require('./api/routes/user');
-const fileUpload = require('express-fileupload');
-var cookieParser = require("cookie-parser");
-var User1 = require('./api/model/User1');
+const passport = require('passport');
+const flash = require('connect-flash');
+const session = require('express-session');
 
-// mongoose.connect('mongodb+srv://auser:auser12345@sbs.5ww4u.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
-// mongoose.connection.on('error',err=>{
-//     console.log('connection failed');
-// });
+const app = express();
 
-// mongoose.connection.on('connected',connected=>{
-//     console.log('connected with database');
-// });
+// Passport Config
+require('./config/passport')(passport);
 
+// DB Config
+const db = require('./config/keys').mongoURI;
 
+// Connect to MongoDB
+mongoose
+  .connect(
+    db,
+    { useNewUrlParser: true ,useUnifiedTopology: true}
+  )
+  .then(() => console.log('MongoDB Connected'))
+  .catch(err => console.log(err));
 
+// EJS
+app.use(expressLayouts);
+app.set('view engine', 'ejs');
 
-app.use(bodyParser.urlencoded({extended:false}));
-app.use(bodyParser.json());
-app.use('/student',studentRoute)
-app.use('/faculty',facultyRoute)
-app.use('/user',userRoute)
-app.use("/products", productRoutes)
-app.use("/orders", orderRoutes)
-app.use('/uploads', express.static('uploads'))
-app.use(fileUpload({
-    useTempFiles:true
+// Express body parser
+app.use(express.urlencoded({ extended: true }));
 
-}))
-
-
-// app.use((req,res,next)=>{
-//     res.status(200).json({
-//         message:'app is running'
-//     })
-// })
-
-
-//connection from refrences videos
-
-// mongoose.connect(mongoURI,{
-//     useUnifiedTopology:true,
-//     useNewUrlParser:true,
-//     useCreateIndex:true,
-
-// })
-// .then((res) => {
-//     console.log("Mongo connected");
-    
-//   })
-
-
-//connection from stack overflow syntax
-// mongoose.connect('mongodb://localhost:27017/sessions', {useNewUrlParser: true, useUnifiedTopology: true})
-//     .then(() => console.log('MongoDB Connected...'))
-//     .catch((err) => console.log(err))
-
-// const store = new MongoDBSession({
-// uri:'mongoURI',
-// collection:'mySessions',
-// })
-
-
-
-
-// app.use(
-//     session({
-// secret: 'key that will sign cookie',
-// resave:false,
-// saveUninitialized:false,
-// store:store,
-
-// }))
-
-
-
-
-// app.get("/",(req,res)=>{
-//     req.session.isAuth =true;
-//     console.log(req.session)
-//     console.log(req.session.id)
-//     res.send ('session is running')
-// })
-
-
-app.use(cookieParser());
-
-
+// Express session
 app.use(
   session({
-    key: "user_sid",
-    secret: "somerandonstuffs",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      expires: 600000,
-    },
+    secret: 'secret',
+    resave: true,
+    saveUninitialized: true
   })
 );
 
 
-app.use((req, res, next) => {
-  if (req.cookies.user_sid && !req.session.user) {
-    res.clearCookie("user_sid");
-  }
+
+
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Connect flash
+app.use(flash());
+
+// Global variables
+app.use(function(req, res, next) {
+  res.locals.success_msg = req.flash('success_msg');
+  res.locals.error_msg = req.flash('error_msg');
+  res.locals.error = req.flash('error');
   next();
 });
 
+// Routes
+app.use('/', require('./routes/index.js'));
+app.use('/users', require('./routes/users.js'));
 
-var sessionChecker = (req, res, next) => {
-  if (req.session.user && req.cookies.user_sid) {
-    res.redirect("/dashboard");
-  } else {
-    next();
-  }
-};
+const PORT = process.env.PORT || 8700;
 
-
-app.get("/", sessionChecker, (req, res) => {
-  res.redirect("/login");
-});
-
-
-app
-  .route("/signup")
-  .get(sessionChecker, (req, res) => {
-    res.sendFile(__dirname + "/public/signup.html");
-  })
-  .post((req, res) => {
-
-    var User1 = new User({
-      username: req.body.username,
-      email: req.body.email,
-      password:req.body.password,
-    });
-    User1.save((err, docs) => {
-      if (err) {
-        res.redirect("/signup");
-      } else {
-          console.log(docs)
-        req.session.user = docs;
-        res.redirect("/dashboard");
-      }
-    });
-  });
-
-
-app
-  .route("/login")
-  .get(sessionChecker, (req, res) => {
-    res.sendFile(__dirname + "/public/login.html");
-  })
-  .post(async (req, res) => {
-    var username = req.body.username,
-      password = req.body.password;
-
-      try {
-        var User1 = await User.findOne({ username: username }).exec();
-        if(!User1) {
-            res.redirect("/login");
-        }
-        user.comparePassword(password, (error, match) => {
-            if(!match) {
-              res.redirect("/login");
-            }
-        });
-        req.session.user = user;
-        res.redirect("/dashboard");
-    } catch (error) {
-      console.log(error)
-    }
-  });
-
-
-app.get("/dashboard", (req, res) => {
-  if (req.session.user && req.cookies.user_sid) {
-    res.sendFile(__dirname + "/public/dashboard.html");
-  } else {
-    res.redirect("/login");
-  }
-});
-
-
-app.get("/logout", (req, res) => {
-  if (req.session.user && req.cookies.user_sid) {
-    res.clearCookie("user_sid");
-    res.redirect("/");
-  } else {
-    res.redirect("/login");
-  }
-});
-
-
-app.use(function (req, res, next) {
-  res.status(404).send("Sorry can't find that!");
-});
-
-
-app.listen(app.get("port"), () =>
-  console.log(`App started on port ${app.get("port")}`)
-);
-
-
-
-
-
-
-
-
-
-
-module.exports=app;
+app.listen(PORT, console.log(`Server running on  ${PORT}`));
