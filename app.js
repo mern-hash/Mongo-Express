@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const flash = require('connect-flash');
 const session = require('express-session');
-
+const studentRoute = require('./routes/student');
 const app = express();
 
 // Passport Config
@@ -38,7 +38,7 @@ app.use(
   })
 );
 
-
+app.use('/student',studentRoute)
 
 
 

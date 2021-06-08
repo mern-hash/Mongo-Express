@@ -6,6 +6,8 @@ const passport = require('passport');
 const User = require('../models/User');
 const { forwardAuthenticated } = require('../config/auth');
 
+
+
 // Login Page
 router.get('/login', forwardAuthenticated, (req, res) => res.render('login'));
 
@@ -21,10 +23,10 @@ router.get('/update', forwardAuthenticated, (req, res) => res.render('update'));
 
 // Register
 router.post('/register', (req, res) => {
-  const { name, email, password, password2 } = req.body;
+  const { name, email,userType, password, password2 } = req.body;
   let errors = [];
 
-  if (!name || !email || !password || !password2) {
+  if (!name || !email || !userType ||!password || !password2) {
     errors.push({ msg: 'Please enter all fields' });
   }
 
@@ -41,6 +43,7 @@ router.post('/register', (req, res) => {
       errors,
       name,
       email,
+      userType,
       password,
       password2
     });
@@ -52,6 +55,7 @@ router.post('/register', (req, res) => {
           errors,
           name,
           email,
+          userType,
           password,
           password2
         });
@@ -59,6 +63,7 @@ router.post('/register', (req, res) => {
         const newUser = new User({
           name,
           email,
+          userType,
           password
         });
 
@@ -99,17 +104,74 @@ router.get('/logout', (req, res) => {
   res.redirect('/users/login');
 });
 
-router.put('/:updateid',(req,res,next)=>{
+
+  router.get('/',(req,res,next)=>{
+   
+    User.find()
+    .then(result=>{
+
+res.status(200).json({
+
+    userData:result
+});
+
+    })
+
+    .catch(err=>{
+
+        console.log(err);
+        res.status(500).json({
+
+            error:err
+        });
+    })
+})
+
+router.get('/:id',(req,res,next)=>{
+   
+    console.log(req.params.id);
+    User.findById(req.params.id)
+    .then(result=>{
+
+        res.status(200).json({
+        
+            user:result
+        })
+        
+        })
+        .catch(err=>{
+
+            console.log(err);
+            res.status(500).json({
+    
+                error:err
+            });
+
+        })
+
+});
+
+
+router.put('/:id',(req,res,next)=>{
 
   console.log(req.params.id);
   User.findOneAndUpdate({_id:req.params.id},{
   $set:{
 
       name:req.body.name,
-      email:req.body.email,
-      password:req.body.password
+      password:req.body.password,
+      email:req.body.email
+      
+    
 }
       })
+
+      // bcrypt.genSalt(10, (err, salt) => {
+      //   bcrypt.hash(User.password, salt, (err, hash) => {
+      //     if (err) throw err;
+      //     User.password = hash;
+      //     User
+      //       .save()
 
       .then(result=>{
 
@@ -118,6 +180,9 @@ router.put('/:updateid',(req,res,next)=>{
               updated_user:result
           })
       })
+
+  //   })
+  // })
      
       .catch(err=>{
 
@@ -135,6 +200,30 @@ router.put('/:updateid',(req,res,next)=>{
 
 
 
+  router.delete('/:id',(req,res,next)=>{
+
+    User.remove({_id:req.params.id})
+    .then(result=>{
+    
+        
+        res.status(200).json({
+    
+            message:'User deleted',
+            result:result
+        })
+    })
+    
+    .catch(err=>{
+    
+        
+        res.status(500).json ({
+    
+            error:err
+        })
+    })
+    
+    
+    })
 
 
 
