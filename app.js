@@ -4,8 +4,12 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const flash = require('connect-flash');
 const session = require('express-session');
+const MongoDBSession = require ('connect-mongodb-session')(session);
 const studentRoute = require('./routes/student');
 const app = express();
+
+
+
 
 // Passport Config
 require('./config/passport')(passport);
@@ -29,12 +33,27 @@ app.set('view engine', 'ejs');
 // Express body parser
 app.use(express.urlencoded({ extended: true }));
 
+const store = new MongoDBSession({
+  uri:db,
+  collection:"mySesions"
+  
+})
+
+
+
+
+
+
 // Express session
 app.use(
   session({
     secret: 'secret',
     resave: true,
-    saveUninitialized: true
+    saveUninitialized: true,
+    store:store,
+    cookie:{
+    maxAge:1000*60
+}
   })
 );
 
@@ -60,6 +79,7 @@ app.use(function(req, res, next) {
 // Routes
 app.use('/', require('./routes/index.js'));
 app.use('/users', require('./routes/users.js'));
+app.use('/admin', require('./routes/admin.js'));
 
 const PORT = process.env.PORT || 8700;
 

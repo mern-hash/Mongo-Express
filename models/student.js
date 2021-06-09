@@ -6,7 +6,8 @@ _id:mongoose.Schema.Types.ObjectId,
 name:String,
 email:String,
 phone:Number,
-gender:String
+gender:String,
+userType:String
 })
 
 module.exports= mongoose.model('Student',studentSchema);

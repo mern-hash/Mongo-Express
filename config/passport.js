@@ -1,6 +1,6 @@
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcryptjs');
-
+const jwt = require('jsonwebtoken');
 // Load User model
 const User = require('../models/User');
 
@@ -19,6 +19,25 @@ module.exports = function(passport) {
         bcrypt.compare(password, user.password, (err, isMatch) => {
           if (err) throw err;
           if (isMatch) {
+            const token = jwt.sign({
+
+
+              email:email
+              
+              },
+              "this dummy text",{
+              
+                expiresIn:"1hr"
+              }
+              
+              );
+              console.log(token);
+
+              // return res.status(200).json({
+              //   message: "Auth successful",
+              //   token: token
+              // });
+              
             return done(null, user);
           } else {
             return done(null, false, { message: 'Password incorrect' });
@@ -27,6 +46,13 @@ module.exports = function(passport) {
       });
     })
   );
+
+
+
+
+
+
+
 
   passport.serializeUser(function(user, done) {
     done(null, user.id);

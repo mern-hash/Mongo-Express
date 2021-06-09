@@ -2,14 +2,16 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
+const checkAuth = require('../config/check-auth');
 // Load User model
 const User = require('../models/User');
 const { forwardAuthenticated } = require('../config/auth');
+const jwt = require('jsonwebtoken');
 
 
 
 // Login Page
-router.get('/login', forwardAuthenticated, (req, res) => res.render('login'));
+router.get('/login', forwardAuthenticated,(req, res) => res.render('login'));
 
 // Register Page
 router.get('/register', forwardAuthenticated, (req, res) => res.render('register'));
@@ -87,20 +89,47 @@ router.post('/register', (req, res) => {
     });
   }
 });
+// const isAuth =(req,res,next) =>{
 
+//   if (req.session.isAuth){
+  
+  
+//     next()
+//   }
+//   else{
+//   redirect('/login')
+  
+//   }
+  
+//   }
 // Login
-router.post('/login', (req, res, next) => {
+
+// router.post('/login', (req, res, next) => {
+//  req.session.isAuth=true,
+//  res.redirect("/dashboard")
+
+// });
+
+// router.get("/dashboard", isAuth,(req,res)=>{
+
+//   res.render("dashboard")
+// })
+
+
+router.post('/login',(req, res, next) => {
   passport.authenticate('local', {
-    successRedirect: '/dashboard',
-    failureRedirect: '/users/login',
-    failureFlash: true
+  successRedirect: '/dashboard',
+  failureRedirect: '/users/login',
+  failureFlash: true
   })(req, res, next);
 });
 
 // Logout
 router.get('/logout', (req, res) => {
+  
   req.logout();
   req.flash('success_msg', 'You are logged out');
+  req.session.destroy();
   res.redirect('/users/login');
 });
 
@@ -165,12 +194,14 @@ router.put('/:id',(req,res,next)=>{
     
 }
       })
+//const hashedPsw = await bcrypt.hash(password,12)
+
 
       // bcrypt.genSalt(10, (err, salt) => {
       //   bcrypt.hash(User.password, salt, (err, hash) => {
       //     if (err) throw err;
-      //     User.password = hash;
-      //     User
+      //     User.password = hashedPsw;
+      //    await User
       //       .save()
 
       .then(result=>{
@@ -224,6 +255,13 @@ router.put('/:id',(req,res,next)=>{
     
     
     })
+
+
+
+
+   
+
+
 
 
 
