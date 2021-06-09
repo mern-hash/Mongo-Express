@@ -39,6 +39,39 @@ const store = new MongoDBSession({
   
 })
 
+//session regenration
+
+// req.session.regenerate(function(err) {
+//   // will have a new session here
+// })
+
+
+//session variable
+
+// var sess;
+// app.get('/',function(req,res){
+
+//   sess=req.session;
+//   sess.email;
+//   sess.name;
+
+
+// });
+
+// app.get('/', function(req, res, next) {
+//   if (req.session.views) {
+//     req.session.views++
+//     res.setHeader('Content-Type', 'text/html')
+//     res.write('<p>views: ' + req.session.views + '</p>')
+//     res.write('<p>expires in: ' + (req.session.cookie.maxAge / 1000) + 's</p>')
+//     res.end()
+//   } else {
+//     req.session.views = 1
+//     res.end('welcome to the session demo. refresh!')
+//   }
+// })
+
+
 
 
 
