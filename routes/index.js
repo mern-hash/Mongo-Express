@@ -14,6 +14,7 @@ router.get('/dashboard', ensureAuthenticated, (req, res) =>{
   req.session.isAuth =true
   res.render('dashboard',{
     user: req.user
+
   })
     
   })
